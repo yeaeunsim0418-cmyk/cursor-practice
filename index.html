@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CURSOR 실습 페이지</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    /* ===== Design tokens ===== */
+    :root {
+      --background: #FDFCF8;
+      --foreground: #2C2C24;
+      --primary: #5D7052;
+      --primary-foreground: #F3F4F1;
+      --secondary: #C18C5D;
+      --secondary-foreground: #FFFFFF;
+      --accent: #E6DCCD;
+      --accent-foreground: #4A4A40;
+      --muted: #F0EBE5;
+      --muted-foreground: #78786C;
+      --border: #DED8CF;
+      --destructive: #A85448;
+      --card: #FEFEFA;
+      --naver-green: #03c75a;
+
+      --font-heading: 'Fraunces', 'Noto Sans KR', serif;
+      --font-body: 'Noto Sans KR', sans-serif;
+
+      --radius-2xl: 1rem;
+      --radius-3xl: 1.5rem;
+      --radius-pill: 9999px;
+
+      --shadow-soft: 0 4px 20px -2px rgba(93, 112, 82, 0.15);
+      --shadow-soft-hover: 0 6px 24px -4px rgba(93, 112, 82, 0.25);
+      --shadow-float: 0 10px 40px -10px rgba(193, 140, 93, 0.2);
+      --shadow-card-hover: 0 20px 40px -10px rgba(93, 112, 82, 0.15);
+
+      --transition: 300ms ease;
+      --transition-slow: 500ms ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-body);
+      line-height: 1.7;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Global paper grain */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.04;
+      mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 180px 180px;
+    }
+
+    h1, h2, h3, .font-heading {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    /* ===== Layout ===== */
+    .section {
+      padding: 8rem 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (min-width: 640px) {
+      .section { padding-left: 1.5rem; padding-right: 1.5rem; }
+    }
+
+    @media (min-width: 1024px) {
+      .section { padding-left: 2rem; padding-right: 2rem; }
+    }
+
+    .container {
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .container--7xl { max-width: 80rem; }
+    .container--6xl { max-width: 72rem; }
+    .container--5xl { max-width: 64rem; }
+    .container--4xl { max-width: 56rem; }
+    .container--2xl { max-width: 42rem; }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.75rem, 4vw, 3rem);
+      margin-bottom: 0.5rem;
+      color: var(--foreground);
+    }
+
+    .section-sub {
+      color: var(--muted-foreground);
+      font-size: 1.05rem;
+      max-width: 36rem;
+      margin: 0 auto;
+    }
+
+    /* ===== Floating nav ===== */
+    .site-header {
+      position: sticky;
+      top: 1rem;
+      z-index: 100;
+      padding: 0 1rem;
+      pointer-events: none;
+    }
+
+    .nav-pill {
+      pointer-events: auto;
+      max-width: 80rem;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem 1rem;
+      flex-wrap: wrap;
+      padding: 0.6rem 0.75rem 0.6rem 1rem;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(222, 216, 207, 0.5);
+      border-radius: var(--radius-pill);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      color: var(--foreground);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .nav-logo__icon {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      background: var(--primary);
+      color: var(--primary-foreground);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    .nav-search-wrap {
+      flex: 1;
+      min-width: 0;
+      max-width: 280px;
+    }
+
+    .nav-toggle-input { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
+
+    .nav-toggle {
+      display: none;
+      margin-left: auto;
+      width: 2.75rem;
+      height: 2.75rem;
+      border: none;
+      border-radius: 50%;
+      background: rgba(93, 112, 82, 0.1);
+      color: var(--primary);
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--transition), transform var(--transition);
+    }
+
+    .nav-toggle:hover { background: rgba(93, 112, 82, 0.18); }
+    .nav-toggle:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .nav-links a {
+      color: var(--muted-foreground);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color var(--transition);
+    }
+
+    .nav-links a:hover { color: var(--primary); }
+
+    .nav-links a:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+
+  .nav-drawer {
+      display: none;
+      width: 100%;
+      flex-basis: 100%;
+      padding: 0.5rem 0.25rem 0.25rem;
+    }
+
+    .nav-drawer .nav-links {
+      flex-direction: column;
+      margin-left: 0;
+      gap: 0.25rem;
+      background: rgba(254, 254, 250, 0.95);
+      border: 1px solid rgba(222, 216, 207, 0.5);
+      border-radius: 2rem;
+      padding: 1rem 1.25rem;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .nav-drawer .nav-links a {
+      display: block;
+      padding: 0.6rem 0.5rem;
+    }
+
+    @media (max-width: 767px) {
+      .nav-search-wrap { order: 3; flex: 1 1 100%; max-width: none; }
+      .nav-toggle { display: flex; order: 2; margin-left: auto; }
+      .nav-links--desktop { display: none; }
+      .nav-drawer { order: 4; }
+      .nav-toggle-input:checked ~ .nav-drawer { display: block; }
+      .nav-toggle-input:checked + .nav-toggle .icon-menu { display: none; }
+      .nav-toggle-input:checked + .nav-toggle .icon-close { display: block; }
+    }
+
+    @media (min-width: 768px) {
+      .nav-drawer { display: none !important; }
+    }
+
+    .icon-close { display: none; }
+
+    /* ===== Organic search (Naver) ===== */
+    .search {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.5);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+      transition: box-shadow var(--transition), border-color var(--transition);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .search:focus-within {
+      border-color: rgba(93, 112, 82, 0.4);
+      box-shadow: 0 0 0 3px rgba(93, 112, 82, 0.15);
+    }
+
+    .search input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--foreground);
+      font-family: var(--font-body);
+      min-width: 0;
+    }
+
+    .search input::placeholder { color: var(--muted-foreground); }
+
+    .search button {
+      flex-shrink: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--naver-green);
+      transition: background var(--transition), transform var(--transition);
+    }
+
+    .search button:hover {
+      background: rgba(3, 199, 90, 0.08);
+    }
+
+    .search button:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: -2px;
+    }
+
+    .search--compact { height: 2.5rem; }
+    .search--compact input { padding: 0 0.75rem 0 1rem; font-size: 0.875rem; }
+    .search--compact button { width: 2.5rem; height: 100%; }
+
+    .search--hero {
+      width: 100%;
+      max-width: 564px;
+      height: 3rem;
+      margin: 0 auto 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .search--hero input { padding: 0 1rem 0 1.25rem; font-size: 1rem; }
+    .search--hero button { width: 3rem; height: 100%; }
+
+    /* ===== Buttons ===== */
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 3rem;
+      padding: 0 2rem;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: transform var(--transition), box-shadow var(--transition), background var(--transition), color var(--transition);
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 3px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--primary-foreground);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .btn-primary:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-soft-hover);
+    }
+
+    .btn-primary:active { transform: scale(0.95); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--secondary);
+      border: 2px solid var(--secondary);
+    }
+
+    .btn-outline:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-float);
+    }
+
+    .btn-outline:active { transform: scale(0.95); }
+
+    /* ===== Hero ===== */
+    .hero {
+      min-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 6rem 1rem 8rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      pointer-events: none;
+      filter: blur(64px);
+      opacity: 0.45;
+    }
+
+    .blob--1 {
+      width: 28rem;
+      height: 28rem;
+      background: rgba(93, 112, 82, 0.25);
+      top: 10%;
+      left: -8%;
+      border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    }
+
+    .blob--2 {
+      width: 24rem;
+      height: 24rem;
+      background: rgba(193, 140, 93, 0.2);
+      bottom: 15%;
+      right: -6%;
+      border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(93, 112, 82, 0.1);
+      color: var(--primary);
+      border: 1px solid rgba(93, 112, 82, 0.25);
+      padding: 0.35rem 1.1rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 span { color: var(--primary); }
+
+    .hero p {
+      color: var(--muted-foreground);
+      font-size: 1.1rem;
+      max-width: 32rem;
+      margin-bottom: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ===== Stats ===== */
+    .stats-section {
+      background: rgba(240, 235, 229, 0.45);
+      padding: 0;
+      position: relative;
+    }
+
+    .stats-section::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.03;
+      mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 3rem 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (min-width: 768px) {
+      .stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        padding: 4rem 2rem;
+      }
+    }
+
+    .stat-item {
+      background: var(--card);
+      border: 1px solid rgba(222, 216, 207, 0.5);
+      border-radius: 2rem;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      box-shadow: var(--shadow-soft);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .stat-item:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-card-hover);
+    }
+
+    .stat-number {
+      font-family: var(--font-heading);
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 800;
+      color: var(--primary);
+      transition: transform var(--transition);
+    }
+
+    .stat-item:hover .stat-number { transform: scale(1.08); }
+
+    .stat-label {
+      color: var(--muted-foreground);
+      font-size: 0.9rem;
+      margin-top: 0.35rem;
+    }
+
+    /* ===== Feature cards ===== */
+    .features {
+      background: var(--background);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    @media (min-width: 768px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (min-width: 1024px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+    }
+
+  @media (min-width: 1280px) {
+      .cards { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(222, 216, 207, 0.5);
+      padding: 2rem;
+      box-shadow: var(--shadow-soft);
+      transition: transform var(--transition-slow), box-shadow var(--transition-slow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.03;
+      mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='c'%3E%3CfeTurbulence baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-card-hover);
+    }
+
+    .card--shape-1 { border-radius: 2rem; }
+    .card--shape-2 { border-radius: 2rem 2rem 2rem 4rem; }
+    .card--shape-3 { border-radius: 4rem 2rem 2rem 2rem; }
+    /* rem 기반 — % radius는 카드 높이에 따라 하단이 잘려 텍스트가 클리핑됨 */
+    .card--shape-4 { border-radius: 2.5rem 3.5rem 3.5rem 2rem; }
+
+    .card-icon-wrap {
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: var(--radius-2xl);
+      background: rgba(93, 112, 82, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.25rem;
+      transition: background var(--transition), transform var(--transition);
+    }
+
+    .card:hover .card-icon-wrap {
+      background: var(--primary);
+      transform: scale(1.05);
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      margin-bottom: 0.75rem;
+      position: relative;
+    }
+
+    .card-desc {
+      color: var(--muted-foreground);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      position: relative;
+    }
+
+    @media (min-width: 1280px) {
+      .card {
+        min-height: 16.5rem;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .card-desc {
+        flex: 1;
+      }
+    }
+
+    /* ===== Bug section (fixed) ===== */
+    .bug-section {
+      background: rgba(230, 220, 205, 0.35);
+      text-align: center;
+    }
+
+    .bug-section .container--4xl {
+      background: var(--card);
+      border: 1px solid rgba(222, 216, 207, 0.5);
+      border-radius: 2rem 4rem 2rem 2rem;
+      padding: 3rem 2rem;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .bug-section h2 {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      color: var(--foreground);
+      margin-bottom: 1rem;
+    }
+
+    .bug-section p { color: var(--muted-foreground); }
+
+    .bug-section .hint {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.4rem 1rem;
+      background: rgba(168, 84, 72, 0.1);
+      color: var(--destructive);
+      border-radius: var(--radius-pill);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* ===== Team ===== */
+    .team {
+      background: rgba(240, 235, 229, 0.3);
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    @media (min-width: 640px) {
+      .team-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .team-card {
+      background: var(--card);
+      border: 1px solid rgba(222, 216, 207, 0.5);
+      border-radius: 2rem;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      box-shadow: var(--shadow-soft);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .team-card:nth-child(1) { border-radius: 2.5rem 2rem 2rem 3rem; }
+    .team-card:nth-child(2) { border-radius: 2rem 3rem 2.5rem 2rem; }
+    .team-card:nth-child(3) { border-radius: 3rem 2rem 2rem 2.5rem; }
+
+    .team-card:hover {
+      transform: translateY(-4px) rotate(1deg);
+      box-shadow: var(--shadow-card-hover);
+    }
+
+    .avatar {
+      width: 4.5rem;
+      height: 4.5rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin: 0 auto 1rem;
+      border: 4px solid #fff;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .team-name {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+    }
+
+    .team-role {
+      color: var(--muted-foreground);
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+    }
+
+    /* ===== Footer ===== */
+    footer {
+      background: var(--primary);
+      color: var(--primary-foreground);
+      padding: 3rem 2rem;
+      text-align: center;
+      font-size: 0.9rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    footer::before {
+      content: '';
+      position: absolute;
+      width: 20rem;
+      height: 20rem;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+      top: -40%;
+      right: -5%;
+      filter: blur(40px);
+    }
+
+    footer p { position: relative; opacity: 0.95; }
+
+    footer span {
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    footer a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <nav class="nav-pill" aria-label="주요 메뉴">
+      <a href="#" class="nav-logo">
+        <span class="nav-logo__icon" aria-hidden="true">✦</span>
+        CURSOR LAB
+      </a>
+
+      <div class="nav-search-wrap">
+        <form class="search search--compact" action="https://search.naver.com/search.naver" method="get" role="search">
+          <input type="search" name="query" placeholder="검색어를 입력해 주세요" aria-label="네이버 검색" required />
+          <button type="submit" aria-label="검색">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"/>
+              <line x1="16.5" y1="16.5" x2="21" y2="21"/>
+            </svg>
+          </button>
+        </form>
+      </div>
+
+      <input type="checkbox" id="nav-toggle" class="nav-toggle-input" aria-hidden="true" />
+      <label for="nav-toggle" class="nav-toggle" aria-label="메뉴 열기">
+        <svg class="icon-menu" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>
+        </svg>
+        <svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+        </svg>
+      </label>
+
+      <ul class="nav-links nav-links--desktop">
+        <li><a href="#features">기능</a></li>
+        <li><a href="#team">팀</a></li>
+        <li><a href="#contact">연락</a></li>
+      </ul>
+
+      <div class="nav-drawer">
+        <ul class="nav-links">
+          <li><a href="#features">기능</a></li>
+          <li><a href="#team">팀</a></li>
+          <li><a href="#contact">연락</a></li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="blob blob--1" aria-hidden="true"></div>
+    <div class="blob blob--2" aria-hidden="true"></div>
+
+    <div class="badge">✦ CURSOR 실습 페이지</div>
+    <h1>AI와 함께하는<br/><span>코딩의 미래</span></h1>
+    <p>이 페이지는 CURSOR의 4가지 모드를 실습하기 위해 만들어진 테스트 페이지입니다.</p>
+
+    <form class="search search--hero" action="https://search.naver.com/search.naver" method="get" role="search">
+      <input type="search" name="query" placeholder="검색어를 입력해 주세요" aria-label="네이버 검색" required />
+      <button type="submit" aria-label="검색">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/>
+          <line x1="16.5" y1="16.5" x2="21" y2="21"/>
+        </svg>
+      </button>
+    </form>
+
+    <div class="btn-group">
+      <button type="button" class="btn btn-primary">시작하기</button>
+      <button type="button" class="btn btn-outline">더 알아보기</button>
+    </div>
+  </section>
+
+  <section class="stats-section" aria-label="통계">
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-number">4가지</div>
+        <div class="stat-label">실습 모드</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">1개</div>
+        <div class="stat-label">수정된 버그 ✓</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">무한</div>
+        <div class="stat-label">수정 가능성</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section features" id="features">
+    <div class="container container--7xl">
+      <header class="section-header">
+        <h2 class="section-title">실습 모드 안내</h2>
+        <p class="section-sub">각 모드별로 이 페이지를 활용하는 방법이에요</p>
+      </header>
+      <div class="cards">
+        <article class="card card--shape-1">
+          <div class="card-icon-wrap" aria-hidden="true">💬</div>
+          <h3 class="card-title">Ask 모드</h3>
+          <p class="card-desc">이 코드에서 궁금한 부분을 AI한테 질문해보세요. 예: "hero 섹션이 뭐야?"</p>
+        </article>
+        <article class="card card--shape-2">
+          <div class="card-icon-wrap" aria-hidden="true">🗺️</div>
+          <h3 class="card-title">Plan 모드</h3>
+          <p class="card-desc">변경 전에 계획을 먼저 받아보세요. 예: "버튼 색을 바꾸고 싶어, 계획 세워줘"</p>
+        </article>
+        <article class="card card--shape-3">
+          <div class="card-icon-wrap" aria-hidden="true">🦾</div>
+          <h3 class="card-title">Agent 모드</h3>
+          <p class="card-desc">통째로 맡겨보세요. 예: "연락처 섹션을 새로 추가해줘"</p>
+        </article>
+        <article class="card card--shape-4">
+          <div class="card-icon-wrap" aria-hidden="true">🐛</div>
+          <h3 class="card-title">Debug 모드</h3>
+          <p class="card-desc">버그 섹션은 이제 제목이 잘 보여요. 다른 숨은 이슈를 찾아보는 것도 좋은 실습이에요.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bug-section" aria-labelledby="bug-heading">
+    <div class="container container--4xl">
+      <h2 id="bug-heading">여기 제목이 보이나요? 👀</h2>
+      <p>이 섹션의 제목 글자색이 배경과 같아서 안 보이던 문제를 고쳤어요.<br/>이제 Debug 모드로 <strong>다른</strong> 스타일 이슈를 찾아보는 실습도 해볼 수 있어요.</p>
+      <p class="hint">✓ 접근성 수정 완료 — 대비 AA 이상</p>
+    </div>
+  </section>
+
+  <section class="section team" id="team">
+    <div class="container container--6xl">
+      <header class="section-header">
+        <h2 class="section-title">우리 팀</h2>
+        <p class="section-sub">Agent 모드로 팀원을 추가하거나 수정해보세요</p>
+      </header>
+      <div class="team-grid">
+        <article class="team-card">
+          <div class="avatar" aria-hidden="true">🤖</div>
+          <h3 class="team-name">AI 에이전트</h3>
+          <p class="team-role">코드 작성 담당</p>
+        </article>
+        <article class="team-card">
+          <div class="avatar" aria-hidden="true">👩‍💻</div>
+          <h3 class="team-name">나</h3>
+          <p class="team-role">방향 결정 담당</p>
+        </article>
+        <article class="team-card">
+          <div class="avatar" aria-hidden="true">✨</div>
+          <h3 class="team-name">CURSOR</h3>
+          <p class="team-role">둘을 연결하는 도구</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer id="contact">
+    <p>CURSOR 실습 페이지 · Made with <span>AI + 나</span> · 2025</p>
+  </footer>
+
+</body>
+</html>
